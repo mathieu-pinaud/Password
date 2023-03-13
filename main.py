@@ -1,4 +1,29 @@
+import hashlib
+import json
+
 password = input('Veuillez entrer votre mot de passe : ')
+
+def my_json_add(hashed):
+    fd = open('mdp.json')
+    nw_dict = json.load(fd)
+    nw_dict['mdp'].append(hashed)
+    fd.close()
+    fd = open('mdp.json', 'w')
+    json.dump(nw_dict, fd)
+    fd.close
+
+def my_json_handler(hashed):
+
+    try :
+        open('mdp.json')
+    except:
+        nw_dict = {'mdp' : []}
+        nw_dict['mdp'].append(hashed)
+        open_file = open("mdp.json", 'w')
+        json.dump(nw_dict, open_file)
+        open_file.close()
+    else:
+        my_json_add(hashed)
 
 def my_print_error(list):
     
@@ -18,8 +43,10 @@ def my_print_error(list):
         ret = 1
     if list[4] == 1:
         print('le mot de passe doit contenir au moins un caractère spécial (!, @, #, $, %, ^, &, *)')
+        ret = 1
     if list[5] == 1:
         print('le mot de passe contient au moins un caractère non géré')
+        ret = 1
     return (ret)
     
 def my_verif(test):
@@ -55,4 +82,10 @@ def my_get_password(password):
             password = input('Veuillez entrer un nouveau mot de passe : ')
     return(password)
 
-print(my_get_password(password))
+
+password = my_get_password(password)
+hashed = hashlib.sha256(password.encode()).hexdigest()
+
+my_json_handler(hashed)
+
+print(hashed)
