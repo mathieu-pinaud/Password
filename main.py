@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 
 def my_json_add(hashed, user):
     fd = open('mdp.json')
@@ -65,44 +66,95 @@ def my_verif(test):
             list_error[5] = 1
     return(my_print_error(list_error))
 
+def my_check_data_mdp(password):
+    try: 
+       fd = open('mdp.json')
+    except:
+        return(True)
+    test = hashlib.sha256(password.encode()).hexdigest()
+    data = json.load(fd)
+    fd.close()
+    for key in data:
+        if (test == data[key]):
+            return(False)
+    return(True)
+
+
 def my_get_password():
 
     password = input('Veuillez entrer votre mot de passe : ')
     confirm_check = False
     while(confirm_check == False):
         if (my_verif(password) == 0):
-            verif_pswrd = input('Veuillez confirmer votre mot de passe : ')
-            if(verif_pswrd == password):
-                confirm_check = True
+            if (my_check_data_mdp(password) == True):
+                verif_pswrd = input('Veuillez confirmer votre mot de passe : ')
+                if(verif_pswrd == password):
+                    confirm_check = True
+                else:
+                    print('Les deux mots de passe doivent être identiques')
             else:
-                print('Les deux mots de passe doivent être identiques')
+                print('Désolé mais ce mot de passe est déja pris')
         if (confirm_check == False):
             password = input('Veuillez entrer un nouveau mot de passe : ')
     return(password)
 
 def my_get_user():
-    user = input("Veuillez définir un nom d'utilisateur")
+    user = input("Veuillez définir un nom d'utilisateur ")
+    if (len(user) == 0):
+        return(my_get_user())
+    try :
+        fd = open('mdp.json', 'r')
+    except:
+        return(user)
+    data = json.load(fd)
+    for key in data:
+        if user == key:
+            print("Ce nom d'utilisateur est deja pris")
+            return(my_get_user())
     return(user)
 
 def my_password_handler():
     user = my_get_user()
     password = my_get_password()
     hashed = hashlib.sha256(password.encode()).hexdigest()
-    my_json_starter(hashed , user)    
+    my_json_starter(hashed , user)
+
+def my_data_reader():
+    try:
+        fd = open('mdp.json')
+    except:
+        print('pas de données enregistrées')
+        return()
+    data = json.load(fd)
+    for key in data:
+        print("le mot de passe (crypté) associé à l'utilisateur", key, 'est :', data[key])
+    
+def my_del_json():
+    try:
+        open('mdp.json')
+    except:
+        print("Il n'y a pas de base de donées a supprimer")
+    else:
+        os.remove('mdp.json')
 
 def my_menu():
     i = 0
     print("-Tapez 1 pour enregistrer un mot de passe")
     print("-Tapez 2 pour afficher les mots de passe")
-    print("-Tapez 3 pour sortir du programme")
-    while (i != 3):
+    print("-Tapez 3 pour supprimer la base données")
+    print("-Tapez 4 pour sortir du programme")
+    while (i != 4):
         try :
             i = int(input("Selection : "))
         except ValueError:
             i = 0
         if (i == 1):
             my_password_handler()
-        elif ( i <= 0 or i > 3):
+        if (i == 2):
+            my_data_reader()
+        if (i == 3):
+            my_del_json()
+        elif ( i <= 0 or i > 4):
             print("La saisie est invalide")
 
 
