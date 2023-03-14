@@ -107,6 +107,7 @@ def my_get_user():
     except:
         return(user)
     data = json.load(fd)
+    fd.close()
     for key in data:
         if user == key:
             print("Ce nom d'utilisateur est deja pris")
@@ -126,6 +127,7 @@ def my_data_reader():
         print('pas de données enregistrées')
         return()
     data = json.load(fd)
+    fd.close()
     for key in data:
         print("le mot de passe (crypté) associé à l'utilisateur", key, 'est :', data[key])
     
@@ -137,13 +139,50 @@ def my_del_json():
     else:
         os.remove('mdp.json')
 
+def my_connect(data, key):
+    test = data[key]
+    cpt = 0
+    while(cpt != 3):
+        attempt = input("Veuillez taper le mot de passe correspondant à l'utilisateur voulu: ")
+        attempt = hashlib.sha256(attempt.encode()).hexdigest()
+        if (attempt == test):
+            print('Opération validée')
+            return(True)
+        else:
+            cpt += 1
+            print("Mot de passe incorrect, il vous reste", 3-cpt, ' essais')
+    return(False)
+
+        
+def my_del_user():
+    del_usr = input("Renseigner le nom d'utilisateur a supprimer : ")
+    try:
+        fd = open('mdp.json')
+    except:
+        print("pas de base de données a modifier")
+        return()
+    data = json.load(fd)
+    fd.close
+    for key in data:
+        if (key == del_usr):
+            if (my_connect(data, key) == True):
+                data.pop(key)
+                fd = open('mdp.json', 'w')
+                json.dump(data, fd, indent=4)
+                fd.close()
+                return()
+            else:
+                print("Vous n'avez pas les droits sur cet utilisateur")
+    print("Le nom d'utilisateur donné n'existe pas dans la base de données")
+    
 def my_menu():
     i = 0
     print("-Tapez 1 pour enregistrer un mot de passe")
     print("-Tapez 2 pour afficher les mots de passe")
     print("-Tapez 3 pour supprimer la base données")
-    print("-Tapez 4 pour sortir du programme")
-    while (i != 4):
+    print("-Tapez 4 pour supprimer un utilisateur")
+    print("-Tapez 5 pour sortir du programme")
+    while (i != 5):
         try :
             i = int(input("Selection : "))
         except ValueError:
@@ -154,8 +193,9 @@ def my_menu():
             my_data_reader()
         if (i == 3):
             my_del_json()
-        elif ( i <= 0 or i > 4):
+        if (i == 4):
+            my_del_user()
+        elif ( i <= 0 or i > 5):
             print("La saisie est invalide")
-
 
 my_menu()
