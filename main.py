@@ -1,29 +1,26 @@
 import hashlib
 import json
 
-password = input('Veuillez entrer votre mot de passe : ')
-
-def my_json_add(hashed):
+def my_json_add(hashed, user):
     fd = open('mdp.json')
     nw_dict = json.load(fd)
-    nw_dict['mdp'].append(hashed)
+    nw_dict[user] = hashed
     fd.close()
     fd = open('mdp.json', 'w')
-    json.dump(nw_dict, fd)
+    json.dump(nw_dict, fd, indent=4)
     fd.close
 
-def my_json_handler(hashed):
+def my_json_starter(hashed, user):
 
     try :
         open('mdp.json')
     except:
-        nw_dict = {'mdp' : []}
-        nw_dict['mdp'].append(hashed)
+        nw_dict = {user : hashed}
         open_file = open("mdp.json", 'w')
-        json.dump(nw_dict, open_file)
+        json.dump(nw_dict, open_file, indent=4)
         open_file.close()
     else:
-        my_json_add(hashed)
+        my_json_add(hashed, user)
 
 def my_print_error(list):
     
@@ -68,8 +65,9 @@ def my_verif(test):
             list_error[5] = 1
     return(my_print_error(list_error))
 
-def my_get_password(password):
+def my_get_password():
 
+    password = input('Veuillez entrer votre mot de passe : ')
     confirm_check = False
     while(confirm_check == False):
         if (my_verif(password) == 0):
@@ -82,10 +80,30 @@ def my_get_password(password):
             password = input('Veuillez entrer un nouveau mot de passe : ')
     return(password)
 
+def my_get_user():
+    user = input("Veuillez définir un nom d'utilisateur")
+    return(user)
 
-password = my_get_password(password)
-hashed = hashlib.sha256(password.encode()).hexdigest()
+def my_password_handler():
+    user = my_get_user()
+    password = my_get_password()
+    hashed = hashlib.sha256(password.encode()).hexdigest()
+    my_json_starter(hashed , user)    
 
-my_json_handler(hashed)
+def my_menu():
+    i = 0
+    print("-Tapez 1 pour enregistrer un mot de passe")
+    print("-Tapez 2 pour afficher les mots de passe")
+    print("-Tapez 3 pour sortir du programme")
+    while (i != 3):
+        try :
+            i = int(input("Selection : "))
+        except ValueError:
+            i = 0
+        if (i == 1):
+            my_password_handler()
+        elif ( i <= 0 or i > 3):
+            print("La saisie est invalide")
 
-print(hashed)
+
+my_menu()
